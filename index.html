@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>StudyMate AI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: #f5f7fa;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    #chatbox {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      height: 400px;
+      overflow-y: auto;
+      background: white;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+    }
+    .message {
+      margin-bottom: 1rem;
+    }
+    .user {
+      text-align: right;
+      color: #2980b9;
+    }
+    .bot {
+      text-align: left;
+      color: #27ae60;
+    }
+    #inputForm {
+      display: flex;
+      gap: 0.5rem;
+    }
+    #userInput {
+      flex: 1;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    #sendBtn {
+      padding: 0 1rem;
+      font-size: 1rem;
+      border: none;
+      background-color: #2980b9;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #sendBtn:hover {
+      background-color: #3498db;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>StudyMate AI</h1>
+
+  <div id="chatbox">
+    <!-- Chat messages will appear here -->
+  </div>
+
+  <form id="inputForm">
+    <input type="text" id="userInput" placeholder="Type your question here..." autocomplete="off" required />
+    <button type="submit" id="sendBtn">Send</button>
+  </form>
+
+  <script>
+    const chatbox = document.getElementById('chatbox');
+    const inputForm = document.getElementById('inputForm');
+    const userInput = document.getElementById('userInput');
+
+    function appendMessage(text, sender) {
+      const msgDiv = document.createElement('div');
+      msgDiv.classList.add('message', sender);
+      msgDiv.textContent = text;
+      chatbox.appendChild(msgDiv);
+      chatbox.scrollTop = chatbox.scrollHeight; // Scroll to bottom
+    }
+
+    inputForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      appendMessage(message, 'user');
+      userInput.value = '';
+      
+      try {
+        const response = await fetch('/ask', {   // Change '/ask' if your API endpoint differs
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        appendMessage(data.reply || "Sorry, I didn't understand that.", 'bot');
+      } catch (err) {
+        appendMessage("Error contacting server. Please try again.", 'bot');
+        console.error(err);
+      }
+    });
+  </script>
